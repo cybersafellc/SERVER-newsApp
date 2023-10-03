@@ -3,6 +3,7 @@ const app = express();
 const port = 9000;
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const date = require("date-and-time");
 //
 const ressponse = require("./ressponse");
 const connection = require("./connection");
@@ -28,7 +29,30 @@ app.get(`/all-news`, async (req, res) => {
     );
   }
 });
-
+app.post(`/post-news`, (req, res) => {
+  try {
+    const now = new Date();
+    const time = date.format(now, "ddd, MMM DD YYYY | HH:mm");
+    connection.query(
+      `INSERT INTO news_list(id, title, text_value, date) VALUES (?,?,?,?)`,
+      [null, req.body.title, req.body.text_value, time],
+      (err, ress) => {
+        if (err) {
+          ressponse(500, "Terjadi kesalahan saat query ke database", res, err);
+        } else if (ress) {
+          ressponse(200, "Data berhasil dikirim", res, ress);
+        }
+      }
+    );
+  } catch (error) {
+    ressponse(
+      500,
+      "terjadi kesalahan dalam membaca semua berita dalam mysql",
+      res,
+      null
+    );
+  }
+});
 app.use((req, res) => {
   ressponse(404, "Halaman tidak ditemukan", res, null);
 });
